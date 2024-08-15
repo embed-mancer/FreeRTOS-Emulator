@@ -133,8 +133,15 @@ static TimerHandle_t xTimer = NULL;
 /*-----------------------------------------------------------*/
 
 /*** SEE THE COMMENTS AT THE TOP OF THIS FILE ***/
+#include "data/data_receive.h"
 void main_blinky( void )
 {
+
+  DataTaskInit();
+  vTaskStartScheduler();
+  for (;;) {
+
+  }
     const TickType_t xTimerPeriod = mainTIMER_SEND_FREQUENCY_MS;
 
     /* Create the queue. */
