@@ -1,6 +1,7 @@
 /Debug
 /Debug/*
 /.settings
+.ccls-cache/
 *.*~
 .metadata/.plugins/
 .metadata/.lock

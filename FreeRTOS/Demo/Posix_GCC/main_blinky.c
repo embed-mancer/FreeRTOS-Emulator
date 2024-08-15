@@ -154,16 +154,16 @@ void main_blinky( void )
         xTaskCreate( prvQueueSendTask, "TX", configMINIMAL_STACK_SIZE, NULL, mainQUEUE_SEND_TASK_PRIORITY, NULL );
 
         /* Create the software timer, but don't start it yet. */
-        xTimer = xTimerCreate( "Timer",                     /* The text name assigned to the software timer - for debug only as it is not used by the kernel. */
-                               xTimerPeriod,                /* The period of the software timer in ticks. */
-                               pdTRUE,                      /* xAutoReload is set to pdTRUE. */
-                               NULL,                        /* The timer's ID is not used. */
-                               prvQueueSendTimerCallback ); /* The function executed when the timer expires. */
+        // xTimer = xTimerCreate( "Timer",                     /* The text name assigned to the software timer - for debug only as it is not used by the kernel. */
+        //                        xTimerPeriod,                /* The period of the software timer in ticks. */
+        //                        pdTRUE,                      /* xAutoReload is set to pdTRUE. */
+        //                        NULL,                        /* The timer's ID is not used. */
+        //                        prvQueueSendTimerCallback ); /* The function executed when the timer expires. */
 
-        if( xTimer != NULL )
-        {
-            xTimerStart( xTimer, 0 );
-        }
+        // if( xTimer != NULL )
+        // {
+        //     xTimerStart( xTimer, 0 );
+        // }
 
         /* Start the tasks and timer running. */
         vTaskStartScheduler();
@@ -191,7 +191,7 @@ static void prvQueueSendTask( void * pvParameters )
 
     /* Initialise xNextWakeTime - this only needs to be done once. */
     xNextWakeTime = xTaskGetTickCount();
-
+    static int count = 0;
     for( ; ; )
     {
         /* Place this task in the blocked state until it is time to run again.
@@ -204,7 +204,16 @@ static void prvQueueSendTask( void * pvParameters )
          * write to the console.  0 is used as the block time so the send operation
          * will not block - it shouldn't need to block as the queue should always
          * have at least one space at this point in the code. */
-        xQueueSend( xQueue, &ulValueToSend, 0U );
+        uint8_t *msg = pvPortMalloc(10);
+        msg[0] = count++;
+        msg[1] = 1;
+        msg[2] = 2;
+        // xQueueSend( xQueue, &ulValueToSend, 0U );
+        if (xQueueSend( xQueue, &msg, 0U ) != pdPASS) {
+          vPortFree(msg);
+          printf("xQueueSend error\n");
+        }
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 /*-----------------------------------------------------------*/
@@ -224,7 +233,7 @@ static void prvQueueSendTimerCallback( TimerHandle_t xTimerHandle )
     /* Send to the queue - causing the queue receive task to unblock and
      * write out a message.  This function is called from the timer/daemon task, so
      * must not block.  Hence the block time is set to 0. */
-    xQueueSend( xQueue, &ulValueToSend, 0U );
+    //xQueueSend( xQueue, &ulValueToSend, 0U );
 }
 /*-----------------------------------------------------------*/
 
@@ -235,32 +244,40 @@ static void prvQueueReceiveTask( void * pvParameters )
     /* Prevent the compiler warning about the unused parameter. */
     ( void ) pvParameters;
 
+    uint8_t *msg;
     for( ; ; )
     {
         /* Wait until something arrives in the queue - this task will block
          * indefinitely provided INCLUDE_vTaskSuspend is set to 1 in
          * FreeRTOSConfig.h.  It will not use any CPU time while it is in the
          * Blocked state. */
-        xQueueReceive( xQueue, &ulReceivedValue, portMAX_DELAY );
+        // xQueueReceive( xQueue, &ulReceivedValue, portMAX_DELAY );
 
-        /* To get here something must have been received from the queue, but
-         * is it an expected value?  Normally calling printf() from a task is not
-         * a good idea.  Here there is lots of stack space and only one task is
-         * using console IO so it is ok.  However, note the comments at the top of
-         * this file about the risks of making Linux system calls (such as
-         * console output) from a FreeRTOS task. */
-        if( ulReceivedValue == mainVALUE_SENT_FROM_TASK )
-        {
-            console_print( "Message received from task\n" );
+        // /* To get here something must have been received from the queue, but
+        //  * is it an expected value?  Normally calling printf() from a task is not
+        //  * a good idea.  Here there is lots of stack space and only one task is
+        //  * using console IO so it is ok.  However, note the comments at the top of
+        //  * this file about the risks of making Linux system calls (such as
+        //  * console output) from a FreeRTOS task. */
+        // if( ulReceivedValue == mainVALUE_SENT_FROM_TASK )
+        // {
+        //     console_print( "Message received from task\n" );
+        // }
+        // else if( ulReceivedValue == mainVALUE_SENT_FROM_TIMER )
+        // {
+        //     console_print( "Message received from software timer\n" );
+        // }
+        // else
+        // {
+        //     console_print( "Unexpected message\n" );
+        // }
+        if (xQueueReceive(xQueue, &msg, portMAX_DELAY) != pdPASS) {
+          printf("xQueueReceive error\n");
+          continue;
         }
-        else if( ulReceivedValue == mainVALUE_SENT_FROM_TIMER )
-        {
-            console_print( "Message received from software timer\n" );
-        }
-        else
-        {
-            console_print( "Unexpected message\n" );
-        }
+        printf("%d\n", msg[0]);
+        vPortFree(msg);
+        vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
 /*-----------------------------------------------------------*/
