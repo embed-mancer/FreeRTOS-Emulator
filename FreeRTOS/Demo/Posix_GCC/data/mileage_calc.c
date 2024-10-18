@@ -1,4 +1,4 @@
-#include "mileage_calculator.h"
+#include "mileage_calc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,24 +14,19 @@
 // Requirement for even
 #define MAX_SPEEDS (CALC_INTERVAL / SPEED_INTERVAL)
 
-// Enum for calculation methods
-typedef enum {
-  METHOD_SIMPSON,
-  METHOD_RK4,
-  // Future methods can be added here
-} CalculationMethod;
-
 static float speed_array[MAX_SPEEDS];
-static int speed_count = 0;
+static int count = 0;
 static float last_speed = 0.0;
-static float last_distance = 0.0;
+static float total_ditance = 0.0;
 static CalculationMethod current_method =
     METHOD_RK4;  // Default calculation method
 
+extern float avg_fuel_l_100;
 // Function to simulate vehicle speed
-float get_vehicle_speed() {
+float GetVehicleSpeed() {
   float speed = (float)(rand() % 100);
-  return speed;  // Return random speed
+  return 27.778;
+  return speed;
 }
 
 // Simpson's rule for distance calculation
@@ -49,13 +44,13 @@ float CalculateDistanceSimpson() {
       distance += 4 * speed_array[i];
     }
   }
-  return (h / 3) * distance;  
+  return (h / 3) * distance;
 }
 
 // Fourth-order Runge-Kutta method for distance calculation
 float CalculateDistanceRK4() {
   float distance = 0.0;
-  double h = SPEED_INTERVAL / 1000.0;  
+  double h = SPEED_INTERVAL / 1000.0;
 
   for (int i = 0; i < MAX_SPEEDS; i++) {
     double k1 = speed_array[i];
@@ -63,7 +58,7 @@ float CalculateDistanceRK4() {
     double k3 = k2;
     double k4 = k3;
 
-    distance += (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4);  
+    distance += (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4);
   }
   return distance;  // Return calculated distance
 }
@@ -72,34 +67,42 @@ float CalculateDistanceRK4() {
 float CalculateDistance() {
   switch (current_method) {
     case METHOD_SIMPSON:
-      return CalculateDistanceSimpson();  
+      return CalculateDistanceSimpson();
     case METHOD_RK4:
-      return CalculateDistanceRK4();  
+      return CalculateDistanceRK4();
     default:
-      return 0.0;  
+      return 0.0;
   }
 }
 
-static void SpeedSamplingTask(void *param) {
+static void SpeedCalcTask(void *param) {
   (void)param;
   TickType_t xLastWakeTime = xTaskGetTickCount();
+  TickType_t xStartTime, xEndTime;
+  xStartTime = xTaskGetTickCount();
 
   for (;;) {
-    float current_speed = get_vehicle_speed();  
-    speed_array[speed_count++] = current_speed;  
+    float current_speed = GetVehicleSpeed();
+    speed_array[count++] = current_speed;
     last_speed = current_speed;
 
-    if (speed_count >= MAX_SPEEDS) {
+    if (count >= MAX_SPEEDS) {
       float distance = CalculateDistance();
-      last_distance += distance;            
-      speed_count = 0;                       
+      total_ditance += distance;
+      xEndTime = xTaskGetTickCount();
+      float total = total_ditance;
+      FuelCalcUpdate(&total_ditance);
+      printf("total distance = %f m in %fs \n", total_ditance,
+             (xEndTime - xStartTime) / 1000.0);
+      printf("Avg =%f L/100km\n", avg_fuel_l_100);
+      count = 0;
     }
     vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(SPEED_INTERVAL));
   }
 }
 
-void MileageCalculatorInit() {
+void MileageCalcInit() {
   srand(time(NULL));
-  xTaskCreate(SpeedSamplingTask, "Mileage", configMINIMAL_STACK_SIZE, NULL,
+  xTaskCreate(SpeedCalcTask, "MileageCalc", configMINIMAL_STACK_SIZE, NULL,
               configMAX_PRIORITIES / 3, NULL);
 }
