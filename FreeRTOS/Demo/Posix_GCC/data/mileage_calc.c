@@ -9,6 +9,8 @@
 #include "task.h"
 #include "timers.h"
 
+#include "globals_calc.h"
+
 #define SPEED_INTERVAL pdMS_TO_TICKS(20)
 #define CALC_INTERVAL pdMS_TO_TICKS(120)
 // Requirement for even
@@ -17,7 +19,6 @@
 static float speed_array[MAX_SPEEDS];
 static int count = 0;
 static float last_speed = 0.0;
-static float total_ditance = 0.0;
 static CalculationMethod current_method =
     METHOD_RK4;  // Default calculation method
 
@@ -88,13 +89,16 @@ static void SpeedCalcTask(void *param) {
 
     if (count >= MAX_SPEEDS) {
       float distance = CalculateDistance();
-      total_ditance += distance;
+      total_distance += distance;
       xEndTime = xTaskGetTickCount();
-      float total = total_ditance;
-      FuelCalcUpdate(&total_ditance);
-      printf("total distance = %f m in %fs \n", total_ditance,
+      printf("total distance = %f m in %fs \n", total_distance,
              (xEndTime - xStartTime) / 1000.0);
-      printf("Avg =%f L/100km\n", avg_fuel_l_100);
+      int avg_fuel = FuelCalcAvg(); // 获取平均油耗
+      if (avg_fuel < 0) {
+          printf("Error calculating average fuel consumption\n");
+      } else {
+          printf("Avg = %.4f L/100km\n", avg_fuel/10000.0);
+      }
       count = 0;
     }
     vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(SPEED_INTERVAL));

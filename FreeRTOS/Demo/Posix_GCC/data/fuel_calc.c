@@ -5,6 +5,7 @@
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
+#include "globals_calc.h"
 #include "mileage_calc.h"
 #include "semphr.h"
 #include "task.h"
@@ -16,10 +17,8 @@
 #define MAX_FUELS (FUEL_CALC_INTERVAL / FUEL_INTERVAL)
 
 static float fuel_array[MAX_FUELS];
-static float total_fuel_consumed = 0.0;
-float avg_fuel_l_100 = 0.0;
-float avg_fuel_save = 0.0;
 static int count = 0;
+static float avg_100 = 0.0;
 static CalculationMethod current_method = METHOD_RK4;
 
 float FuelCalcInstant() {
@@ -28,10 +27,10 @@ float FuelCalcInstant() {
   return fuel;
 }
 
-float FuelCalcAvg() {
-  printf("avg_fuel_l_100 = %f\n", avg_fuel_save);
-  return avg_fuel_save;
+int FuelCalcAvg() {
+  return total_fuel_consumed * 1000000 / total_distance;
 }
+
 // Simpson's rule for fuel calculation
 float CalculateFuelSimpson() {
   float fuel = 0.0;
@@ -65,14 +64,6 @@ float CalculateFuelRK4() {
   }
   return fuel;
 }
-
-void FuelCalcUpdate(float *distance) {
-  avg_fuel_l_100 = total_fuel_consumed * 100 / *distance;
-  avg_fuel_save = avg_fuel_l_100;
-  printf("Avg 100 = %f L/100km\n", avg_fuel_l_100);
-}
-
-void FuelCalcGetTotalConsumed() {}
 
 // Function to choose the calculation method
 float CalculateFuel() {
