@@ -134,10 +134,12 @@ static TimerHandle_t xTimer = NULL;
 
 /*** SEE THE COMMENTS AT THE TOP OF THIS FILE ***/
 #include "data/data_receive.h"
+#include "data/mileage_calculator.h"
 void main_blinky( void )
 {
 
-  DataTaskInit();
+  // DataTaskInit();
+  MileageCalculatorInit();
   vTaskStartScheduler();
   for (;;) {
 
