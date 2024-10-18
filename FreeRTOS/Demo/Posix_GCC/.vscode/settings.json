@@ -1,0 +1,6 @@
+{
+  "files.associations": {
+    "*.cpp": "cpp",
+    "mileage_calc.h": "c"
+  }
+}
