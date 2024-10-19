@@ -5,11 +5,12 @@
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
-#include "globals_calc.h"
 #include "mileage_calc.h"
 #include "semphr.h"
 #include "task.h"
 #include "timers.h"
+
+#include "globals_calc.h"
 
 #define FUEL_INTERVAL pdMS_TO_TICKS(20)
 #define FUEL_CALC_INTERVAL pdMS_TO_TICKS(120)
@@ -23,13 +24,11 @@ static CalculationMethod current_method = METHOD_RK4;
 
 float FuelCalcInstant() {
   float fuel = (float)(rand() % 100);
-  return 1;
+  // return 1;
   return fuel;
 }
 
-int FuelCalcAvg() {
-  return total_fuel_consumed * 1000000 / total_distance;
-}
+float FuelCalcAvg() { return globals_total_fuel * 100 / globals_total_distance; }
 
 // Simpson's rule for fuel calculation
 float CalculateFuelSimpson() {
@@ -89,10 +88,10 @@ static void FuelCalcTask(void *param) {
 
     if (count >= MAX_FUELS) {
       float fuel = CalculateFuel();
-      total_fuel_consumed += fuel;
+      globals_total_fuel += fuel;
       xEndTime = xTaskGetTickCount();
-      printf("total fuel = %.4f ml int %.4fs \n", total_fuel_consumed,
-             (xEndTime - xStartTime) / 1000.0);
+      LOG_DEBUG("total fuel = %.1f ml in %.3fs", globals_total_fuel,
+                (xEndTime - xStartTime) / 1000.0);
       count = 0;
     }
     vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(FUEL_INTERVAL));
@@ -100,7 +99,7 @@ static void FuelCalcTask(void *param) {
 }
 
 void FuelCalcInit() {
-  total_fuel_consumed = 0.0;
+  globals_total_fuel = 0.0;
   srand(time(NULL));
   xTaskCreate(FuelCalcTask, "FuelCalc", configMINIMAL_STACK_SIZE, NULL,
               configMAX_PRIORITIES / 3, NULL);

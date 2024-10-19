@@ -13,8 +13,28 @@
 #ifndef GLOBALS_CALC_H_
 #define GLOBALS_CALC_H_
 
-extern double total_fuel_consumed;
-extern double total_distance;
-extern float avg_fuel_100;
+#include <stdio.h>
 
-#endif // GLOBALS_CALC_H_
+#define LOG_DEBUG(fmt, ...) \
+  printf("[DEBUG][%s@%d] " fmt "\n", __func__, __LINE__, ##__VA_ARGS__)
+
+#define LOG_INFO(fmt, ...) \
+  printf("[INFO][%s@%d] " fmt "\n", __func__, __LINE__, ##__VA_ARGS__)
+
+#define LOG_WARNING(fmt, ...) \
+  printf("[WARNING][%s@%d] " fmt "\n", __func__, __LINE__, ##__VA_ARGS__)
+
+#define LOG_ERROR(fmt, ...) \
+  printf("[ERROR][%s@%d] " fmt "\n", __func__, __LINE__, ##__VA_ARGS__)
+
+// Enum for calculation methods
+typedef enum {
+  METHOD_SIMPSON,
+  METHOD_RK4,
+  // Future methods can be added here
+} CalculationMethod;
+
+extern double globals_total_fuel;
+extern double globals_total_distance;
+
+#endif  // GLOBALS_CALC_H_

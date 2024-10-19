@@ -13,13 +13,6 @@
 #ifndef MILEAGE_CALC_H_
 #define MILEAGE_CALC_H_
 
-// Enum for calculation methods
-typedef enum {
-  METHOD_SIMPSON,
-  METHOD_RK4,
-  // Future methods can be added here
-} CalculationMethod;
-
 void MileageCalcInit();
 float CalculateDistance();
 

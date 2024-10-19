@@ -10,6 +10,7 @@
 #include "timers.h"
 
 #include "globals_calc.h"
+#include "fuel_calc.h"
 
 #define SPEED_INTERVAL pdMS_TO_TICKS(20)
 #define CALC_INTERVAL pdMS_TO_TICKS(120)
@@ -19,14 +20,13 @@
 static float speed_array[MAX_SPEEDS];
 static int count = 0;
 static float last_speed = 0.0;
-static CalculationMethod current_method =
-    METHOD_RK4;  // Default calculation method
+static CalculationMethod current_method = METHOD_RK4;
 
 extern float avg_fuel_l_100;
 // Function to simulate vehicle speed
 float GetVehicleSpeed() {
-  float speed = (float)(rand() % 100);
-  return 27.778;
+  float speed = (float)(rand() % 300);
+  // return 27.778;
   return speed;
 }
 
@@ -89,16 +89,11 @@ static void SpeedCalcTask(void *param) {
 
     if (count >= MAX_SPEEDS) {
       float distance = CalculateDistance();
-      total_distance += distance;
+      globals_total_distance += distance;
       xEndTime = xTaskGetTickCount();
-      printf("total distance = %f m in %fs \n", total_distance,
-             (xEndTime - xStartTime) / 1000.0);
-      int avg_fuel = FuelCalcAvg(); // 获取平均油耗
-      if (avg_fuel < 0) {
-          printf("Error calculating average fuel consumption\n");
-      } else {
-          printf("Avg = %.4f L/100km\n", avg_fuel/10000.0);
-      }
+      LOG_DEBUG("total distance = %.2f m in %.3fs", globals_total_distance,
+                (xEndTime - xStartTime) / 1000.0);
+      LOG_DEBUG("%.3fL/100km", FuelCalcAvg());
       count = 0;
     }
     vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(SPEED_INTERVAL));
