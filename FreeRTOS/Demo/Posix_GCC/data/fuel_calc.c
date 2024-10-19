@@ -20,11 +20,10 @@
 static float fuel_array[MAX_FUELS];
 static int count = 0;
 static float avg_100 = 0.0;
-static CalculationMethod current_method = METHOD_RK4;
 
 float FuelCalcInstant() {
   float fuel = (float)(rand() % 100);
-  // return 1;
+  return 27.778;
   return fuel;
 }
 
@@ -66,7 +65,7 @@ float CalculateFuelRK4() {
 
 // Function to choose the calculation method
 float CalculateFuel() {
-  switch (current_method) {
+  switch (globals_current_method) {
     case METHOD_SIMPSON:
       return CalculateFuelSimpson();
     case METHOD_RK4:
@@ -88,10 +87,12 @@ static void FuelCalcTask(void *param) {
 
     if (count >= MAX_FUELS) {
       float fuel = CalculateFuel();
+      xSemaphoreTake(globals_mutex, portMAX_DELAY);
       globals_total_fuel += fuel;
       xEndTime = xTaskGetTickCount();
       LOG_DEBUG("total fuel = %.1f ml in %.3fs", globals_total_fuel,
                 (xEndTime - xStartTime) / 1000.0);
+      xSemaphoreGive(globals_mutex);
       count = 0;
     }
     vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(FUEL_INTERVAL));
@@ -100,6 +101,7 @@ static void FuelCalcTask(void *param) {
 
 void FuelCalcInit() {
   globals_total_fuel = 0.0;
+  GlobalsInitMutex();
   srand(time(NULL));
   xTaskCreate(FuelCalcTask, "FuelCalc", configMINIMAL_STACK_SIZE, NULL,
               configMAX_PRIORITIES / 3, NULL);

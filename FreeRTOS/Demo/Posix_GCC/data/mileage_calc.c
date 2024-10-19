@@ -20,14 +20,13 @@
 static float speed_array[MAX_SPEEDS];
 static int count = 0;
 static float last_speed = 0.0;
-static CalculationMethod current_method = METHOD_RK4;
 
 extern float avg_fuel_l_100;
 // Function to simulate vehicle speed
 float GetVehicleSpeed() {
   float speed = (float)(rand() % 300);
-  // return 27.778;
-  return speed;
+  return 27.778;
+  // return speed;
 }
 
 // Simpson's rule for distance calculation
@@ -66,7 +65,7 @@ float CalculateDistanceRK4() {
 
 // Function to choose the calculation method
 float CalculateDistance() {
-  switch (current_method) {
+  switch (globals_current_method) {
     case METHOD_SIMPSON:
       return CalculateDistanceSimpson();
     case METHOD_RK4:
@@ -89,11 +88,13 @@ static void SpeedCalcTask(void *param) {
 
     if (count >= MAX_SPEEDS) {
       float distance = CalculateDistance();
+      xSemaphoreTake(globals_mutex, portMAX_DELAY);
       globals_total_distance += distance;
       xEndTime = xTaskGetTickCount();
       LOG_DEBUG("total distance = %.2f m in %.3fs", globals_total_distance,
                 (xEndTime - xStartTime) / 1000.0);
       LOG_DEBUG("%.3fL/100km", FuelCalcAvg());
+      xSemaphoreGive(globals_mutex);
       count = 0;
     }
     vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(SPEED_INTERVAL));

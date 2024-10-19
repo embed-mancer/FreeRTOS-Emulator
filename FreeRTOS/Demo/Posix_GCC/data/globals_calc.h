@@ -14,6 +14,10 @@
 #define GLOBALS_CALC_H_
 
 #include <stdio.h>
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "semphr.h"
 
 #define LOG_DEBUG(fmt, ...) \
   printf("[DEBUG][%s@%d] " fmt "\n", __func__, __LINE__, ##__VA_ARGS__)
@@ -34,7 +38,11 @@ typedef enum {
   // Future methods can be added here
 } CalculationMethod;
 
+extern SemaphoreHandle_t  globals_mutex;
 extern double globals_total_fuel;
 extern double globals_total_distance;
+extern CalculationMethod globals_current_method;
+
+void GlobalsInitMutex();
 
 #endif  // GLOBALS_CALC_H_
