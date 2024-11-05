@@ -141,8 +141,7 @@ void main_blinky( void )
 {
 
   // DataTaskInit();
-  MileageCalcInit();
-  FuelCalcInit();
+  CalcInit();
   vTaskStartScheduler();
   for (;;) {
 

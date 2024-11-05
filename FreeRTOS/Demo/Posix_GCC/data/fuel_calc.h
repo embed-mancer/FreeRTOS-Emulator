@@ -16,5 +16,6 @@
 void FuelCalcInit();
 void FuelCalcUpdate(float *distance);
 float FuelCalcAvg();
+void CalcInit(void);
 
 #endif // FUEL_CALC_H_

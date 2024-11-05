@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
@@ -12,47 +13,42 @@
 #include "globals_calc.h"
 #include "fuel_calc.h"
 
-#define SPEED_INTERVAL pdMS_TO_TICKS(20)
-#define CALC_INTERVAL pdMS_TO_TICKS(120)
+#define SPEED_INTERVAL_MS 20
+#define CALC_INTERVAL_MS 120
+#define SPEED_INTERVAL pdMS_TO_TICKS(SPEED_INTERVAL_MS)
+#define CALC_INTERVAL pdMS_TO_TICKS(CALC_INTERVAL_MS)
 // Requirement for even
-#define MAX_SPEEDS (CALC_INTERVAL / SPEED_INTERVAL)
+#define MAX_SPEEDS (CALC_INTERVAL_MS / SPEED_INTERVAL_MS)
 
 static float speed_array[MAX_SPEEDS];
-static int count = 0;
+static int speed_count = 0;
 static float last_speed = 0.0;
 
 extern float avg_fuel_l_100;
+
 // Function to simulate vehicle speed
-float GetVehicleSpeed() {
-  float speed = (float)(rand() % 300);
-  return 27.778;
-  // return speed;
+static float GetVehicleSpeed(void) {
+  return 27.778f;  // Fixed value for consistent simulation
 }
 
 // Simpson's rule for distance calculation
-float CalculateDistanceSimpson() {
-  float distance = 0.0;
-  double h = SPEED_INTERVAL / 1000.0;
+static float CalculateDistanceSimpson(void) {
+  float distance = speed_array[0] + speed_array[MAX_SPEEDS - 1];
+  double h = SPEED_INTERVAL_MS / 1000.0;
 
-  distance += speed_array[0];
-  distance += speed_array[MAX_SPEEDS - 1];
-
-  for (int i = 1; i < MAX_SPEEDS; i++) {
-    if (i % 2 == 0) {
-      distance += 2 * speed_array[i];
-    } else {
-      distance += 4 * speed_array[i];
-    }
+  for (int i = 1; i < MAX_SPEEDS - 1; ++i) {
+    distance += (i % 2 == 0) ? 2 * speed_array[i] : 4 * speed_array[i];
   }
+
   return (h / 3) * distance;
 }
 
 // Fourth-order Runge-Kutta method for distance calculation
-float CalculateDistanceRK4() {
-  float distance = 0.0;
-  double h = SPEED_INTERVAL / 1000.0;
+static float CalculateDistanceRK4(void) {
+  float distance = 0.0f;
+  double h = SPEED_INTERVAL_MS / 1000.0;
 
-  for (int i = 0; i < MAX_SPEEDS; i++) {
+  for (int i = 0; i < MAX_SPEEDS; ++i) {
     double k1 = speed_array[i];
     double k2 = (i < MAX_SPEEDS - 1) ? speed_array[i + 1] : k1;
     double k3 = k2;
@@ -60,49 +56,62 @@ float CalculateDistanceRK4() {
 
     distance += (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4);
   }
-  return distance;  // Return calculated distance
+
+  return distance;
 }
 
 // Function to choose the calculation method
-float CalculateDistance() {
+float CalculateDistance(void) {
   switch (globals_current_method) {
     case METHOD_SIMPSON:
       return CalculateDistanceSimpson();
     case METHOD_RK4:
       return CalculateDistanceRK4();
     default:
-      return 0.0;
+      return 0.0f;
   }
 }
 
+// Task to calculate speed and distance
 static void SpeedCalcTask(void *param) {
   (void)param;
   TickType_t xLastWakeTime = xTaskGetTickCount();
-  TickType_t xStartTime, xEndTime;
-  xStartTime = xTaskGetTickCount();
+  TickType_t xStartTime = xLastWakeTime;
 
   for (;;) {
+    // Get the current speed and store it in the array
     float current_speed = GetVehicleSpeed();
-    speed_array[count++] = current_speed;
+    speed_array[speed_count++] = current_speed;
     last_speed = current_speed;
 
-    if (count >= MAX_SPEEDS) {
+    // If array is full, calculate distance and log results
+    if (speed_count >= MAX_SPEEDS) {
       float distance = CalculateDistance();
-      xSemaphoreTake(globals_mutex, portMAX_DELAY);
-      globals_total_distance += distance;
-      xEndTime = xTaskGetTickCount();
-      LOG_DEBUG("total distance = %.2f m in %.3fs", globals_total_distance,
-                (xEndTime - xStartTime) / 1000.0);
-      LOG_DEBUG("%.3fL/100km", FuelCalcAvg());
-      xSemaphoreGive(globals_mutex);
-      count = 0;
+
+      // Update global distance with mutual exclusion
+      if (xSemaphoreTake(globals_mutex, portMAX_DELAY) == pdTRUE) {
+        globals_total_distance += distance;
+        TickType_t xEndTime = xTaskGetTickCount();
+
+        LOG_DEBUG("Total distance = %.2f m in %.3fs", globals_total_distance,
+                  (xEndTime - xStartTime) / 1000.0);
+        LOG_DEBUG("%.3f L/100km", FuelCalcAvg());
+
+        xSemaphoreGive(globals_mutex);
+      }
+
+      // Reset speed count for the next calculation
+      speed_count = 0;
     }
-    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(SPEED_INTERVAL));
+
+    // Delay until the next speed measurement
+    vTaskDelayUntil(&xLastWakeTime, SPEED_INTERVAL);
   }
 }
 
-void MileageCalcInit() {
-  srand(time(NULL));
+// Initialization function for mileage calculation
+void MileageCalcInit(void) {
+  srand((unsigned int)time(NULL));
   xTaskCreate(SpeedCalcTask, "MileageCalc", configMINIMAL_STACK_SIZE, NULL,
-              configMAX_PRIORITIES / 3, NULL);
+              tskIDLE_PRIORITY + 1, NULL);
 }
