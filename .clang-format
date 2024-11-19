@@ -1,15 +1,11 @@
 BasedOnStyle: Google
 IndentWidth: 2
 UseTab: Never
-
-IncludeBlocks: Preserve
-# IncludeCategories:
-#   - Regex:           '^<.*>'
-#     Priority:       1
-#   - Regex:           '^\.\./.*'
-#     Priority:       2
-#   - Regex:           '^\./.*'
-#     Priority:       3
-#   - Regex:           '.*'
-#     Priority:       4
+BreakBeforeBraces: Attach 
 SortIncludes: false
+BinPackParameters: true
+BinPackArguments: true
+AllowShortIfStatementsOnASingleLine: false
+AlignConsecutiveAssignments: true
+AllowShortFunctionsOnASingleLine: None
+IndentCaseLabels: false
