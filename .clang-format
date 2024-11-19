@@ -3,9 +3,9 @@ IndentWidth: 2
 UseTab: Never
 BreakBeforeBraces: Attach 
 SortIncludes: false
-BinPackParameters: true
-BinPackArguments: true
-AllowShortIfStatementsOnASingleLine: false
-AlignConsecutiveAssignments: true
-AllowShortFunctionsOnASingleLine: None
-IndentCaseLabels: false
+# BinPackParameters: true
+# BinPackArguments: true
+# AllowShortIfStatementsOnASingleLine: false
+# AlignConsecutiveAssignments: true
+# AllowShortFunctionsOnASingleLine: None
+# IndentCaseLabels: false

@@ -31,6 +31,7 @@ file(GLOB SOURCE_FILES
     "${FREERTOS_DIR}/Source/*.c"
     "${FREERTOS_DIR}/Demo/Posix_GCC/tool/*.c"
     "${FREERTOS_DIR}/Demo/Posix_GCC/data/*.c"
+    "${FREERTOS_DIR}/Demo/Posix_GCC/can/*.c"
     "${KERNEL_DIR}/portable/MemMang/heap_3.c"
     "${KERNEL_DIR}/portable/ThirdParty/GCC/Posix/utils/wait_for_event.c"
     "${KERNEL_DIR}/portable/ThirdParty/GCC/Posix/port.c"
