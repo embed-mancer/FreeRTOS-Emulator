@@ -141,10 +141,9 @@ static TimerHandle_t xTimer = NULL;
 
 void main_blinky( void )
 {
-
-  // DataTaskInit();
-  // CalcInit();
-  test_can();
+  DataTaskInit();
+  CalcInit();
+  // test_can();
   vTaskStartScheduler();
   for (;;) {
 

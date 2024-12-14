@@ -13,8 +13,8 @@
 #include "globals_calc.h"
 #include "fuel_calc.h"
 
-#define SPEED_INTERVAL_MS 20
-#define CALC_INTERVAL_MS 120
+#define SPEED_INTERVAL_MS 50
+#define CALC_INTERVAL_MS 550
 #define SPEED_INTERVAL pdMS_TO_TICKS(SPEED_INTERVAL_MS)
 #define CALC_INTERVAL pdMS_TO_TICKS(CALC_INTERVAL_MS)
 // Requirement for even
@@ -28,7 +28,7 @@ extern float avg_fuel_l_100;
 
 // Function to simulate vehicle speed
 static float GetVehicleSpeed(void) {
-  return 27.778f;  // Fixed value for consistent simulation
+  return 1.0f;  // Fixed value for consistent simulation
 }
 
 // Simpson's rule for distance calculation
@@ -39,7 +39,7 @@ static float CalculateDistanceSimpson(void) {
   for (int i = 1; i < MAX_SPEEDS - 1; ++i) {
     distance += (i % 2 == 0) ? 2 * speed_array[i] : 4 * speed_array[i];
   }
-
+  speed_array[0] = speed_array[MAX_SPEEDS - 1];
   return (h / 3) * distance;
 }
 
@@ -79,6 +79,8 @@ static void SpeedCalcTask(void *param) {
   TickType_t xStartTime = xLastWakeTime;
 
   for (;;) {
+    // Delay until the next speed measurement
+    vTaskDelayUntil(&xLastWakeTime, SPEED_INTERVAL);
     // Get the current speed and store it in the array
     float current_speed = GetVehicleSpeed();
     speed_array[speed_count++] = current_speed;
@@ -95,17 +97,15 @@ static void SpeedCalcTask(void *param) {
 
         LOG_DEBUG("Total distance = %.2f m in %.3fs", globals_total_distance,
                   (xEndTime - xStartTime) / 1000.0);
-        LOG_DEBUG("%.3f L/100km", FuelCalcAvg());
+        // LOG_DEBUG("%.3f L/100km", FuelCalcAvg());
 
         xSemaphoreGive(globals_mutex);
       }
 
       // Reset speed count for the next calculation
-      speed_count = 0;
+      speed_count = 1;
     }
 
-    // Delay until the next speed measurement
-    vTaskDelayUntil(&xLastWakeTime, SPEED_INTERVAL);
   }
 }
 
