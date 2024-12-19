@@ -133,17 +133,11 @@ static TimerHandle_t xTimer = NULL;
 /*-----------------------------------------------------------*/
 
 /*** SEE THE COMMENTS AT THE TOP OF THIS FILE ***/
-#include "data/data_receive.h"
-#include "data/mileage_calc.h"
-#include "data/fuel_calc.h"
-#include "can/test_can.h"
 
-
+#include "calculations/mileage_calc.h"
 void main_blinky( void )
 {
-  DataTaskInit();
-  CalcInit();
-  // test_can();
+  mileage_calc_init();
   vTaskStartScheduler();
   for (;;) {
 
