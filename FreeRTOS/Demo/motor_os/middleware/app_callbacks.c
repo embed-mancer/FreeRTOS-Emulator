@@ -7,22 +7,15 @@
 #include "vehicle_rpm.h"
 #include "indicator.h"
 
-// static void speed_handler(const can_msg_t *msg) {
-//   {
-//     if (msg->dlc < 2)
-//       return;
-//     uint16_t raw = (uint16_t)msg->data[0] | ((uint16_t)msg->data[1] << 8);
-//     double kmh   = raw * 0.01;
-//     vehicle_speed_set_status(kmh, true);
-//   }
-//
-//   static void rpm_handler(const can_msg_t *msg) {
-//     if (msg->dlc < 2)
-//       return;
-//     uint16_t raw = (uint16_t)msg->data[0] | ((uint16_t)msg->data[1] << 8);
-//     double rpm   = raw * 0.1;
-//     vehicle_rpm_set_status(rpm, true);
-//   }
+static void speed_handler(const protocol_frame_t *msg) {
+  // vehicle_speed_set_status(kmh, true);
+}
+
+static void rpm_handler(const protocol_frame_t *msg) {
+}
+
+static void indicator_handler(const protocol_frame_t *msg) {
+}
 //
 //   static void indicator_handler(const can_msg_t *msg) {
 //     /* Mapping table: CAN ID, byte index, mask, shift, indicator type */
@@ -61,12 +54,12 @@
 //     }
 //   }
 //
-//   void app_register_handlers() {
-//     can_manager_register(CAN_ID_VEHICLE_SPEED, speed_handler);
-//     can_manager_register(CAN_ID_ENGINE_RPM, rpm_handler);
-//     can_manager_register(CAN_ID_LIGHTS_101, indicator_handler);
-//     can_manager_register(CAN_ID_LIGHTS_345, indicator_handler);
-//   }
+void app_register_handlers() {
+  can_manager_register(CAN_ID_VEHICLE_SPEED, speed_handler);
+  can_manager_register(CAN_ID_ENGINE_RPM, rpm_handler);
+  can_manager_register(CAN_ID_LIGHTS_101, indicator_handler);
+  can_manager_register(CAN_ID_LIGHTS_345, indicator_handler);
+}
 
 void app_test() {
   printf("app test\n");

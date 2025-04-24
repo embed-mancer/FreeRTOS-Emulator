@@ -14,6 +14,5 @@
 #define APP_CALLBACKS_H_
 
 void app_register_handlers();
-void app_test();
 
 #endif  // APP_CALLBACKS_H_

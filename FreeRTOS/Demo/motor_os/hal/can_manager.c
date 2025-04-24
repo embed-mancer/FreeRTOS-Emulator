@@ -1,52 +1,23 @@
 #include "can_manager.h"
+
 #include <stdlib.h>
 
 #include "FreeRTOS.h"
 #include "queue.h"
 
-#define MAX_HANDLERS 32
+#include "../middleware/parser/frame_parser.h"
 
-static struct {
-  uint32_t id;
-  frame_handler_t cb;
-} s_handlers[MAX_HANDLERS];
+#define HAL_PARSER_READ_BUF_SIZE 256u
 
-static size_t s_hander_count = 0;
+static uint8_t s_read_buf[HAL_PARSER_READ_BUF_SIZE];
 
-static QueueHandle_t s_frame_queue;
-
-static void frame_processing_task(void *pvParameters);
-
-void can_manager_init(const char *ifname) {
-  s_frame_queue = xQueueCreate(16, sizeof(protocol_frame_t));
-  xTaskCreate(frame_processing_task, "frm_prc", 256, NULL, 2, NULL);
+bool can_manager_init(const char *device, int baudrate) {
 }
 
-void can_manager_register(uint32_t id, frame_handler_t handler) {
-  if (s_hander_count < MAX_HANDLERS) {
-    s_handlers[s_hander_count++] = (typeof(s_handlers[0])){id, handler};
-  }
-}
-
-static void dispatch_frame_to_queue(const protocol_frame_t *frame) {
-  protocol_frame_t local = *frame;
-  if (xQueueSend(s_frame_queue, &local, 0) != pdPASS) {
-  }
-}
-
-static void frame_processing_task(void *pvParameters) {
-  protocol_frame_t frm;
-  for (;;) {
-    if (xQueueReceive(s_frame_queue, &frm, portMAX_DELAY) == pdPASS) {
-      can_manager_dispatch(&frm);
-    }
-  }
-}
-
-void can_manager_dispatch(const protocol_frame_t *msg) {
-  for (size_t i = 0; i < s_hander_count; ++i) {
-    if (s_handlers[i].id == msg->cmd_code) {
-      s_handlers[i].cb(&msg);
-    }
+void can_manager_dispatch() {
+  size_t n = bsp_stream_read(s_read_buf, sizeof(s_read_buf));
+  if (n > 0) {
+    /* 2) Feed all received bytes to the frame parser */
+    frame_parser_feed(s_read_buf, n);
   }
 }
