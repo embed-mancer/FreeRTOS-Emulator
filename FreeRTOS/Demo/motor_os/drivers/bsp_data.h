@@ -13,6 +13,10 @@
 #ifndef BSP_DATA_H_
 #define BSP_DATA_H_
 
+#include <stddef.h>
+#include <stdint.h>
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

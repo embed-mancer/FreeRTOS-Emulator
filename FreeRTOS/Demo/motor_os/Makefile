@@ -21,7 +21,11 @@ INCLUDE_DIRS          += -I${FREERTOS_PLUS_DIR}/Source/FreeRTOS-Plus-Trace/Inclu
 INCLUDE_DIRS          += -I${FREERTOS_DIR}/Demo/motor_os/drivers
 INCLUDE_DIRS          += -I${FREERTOS_DIR}/Demo/motor_os/hal
 INCLUDE_DIRS          += -I${FREERTOS_DIR}/Demo/motor_os/middleware
-INCLUDE_DIRS          += -I${FREERTOS_DIR}/Demo/motor_os/middleware/parser
+# INCLUDE_DIRS          += -I${FREERTOS_DIR}/Demo/motor_os/middleware/parser
+# INCLUDE_DIRS          += -I${FREERTOS_DIR}/Demo/motor_os/middleware/indicator
+# INCLUDE_DIRS          += -I${FREERTOS_DIR}/Demo/motor_os/middleware/rpm
+# INCLUDE_DIRS          += -I${FREERTOS_DIR}/Demo/motor_os/middleware/speed
+# INCLUDE_DIRS          += -I${FREERTOS_DIR}/Demo/motor_os/middleware/maintenance
 INCLUDE_DIRS          += -I${FREERTOS_DIR}/Demo/motor_os/ui
 
 SOURCE_FILES          := $(wildcard *.c)
@@ -30,6 +34,10 @@ SOURCE_FILES          += $(wildcard ${FREERTOS_DIR}/Demo/motor_os/drivers/*.c)
 SOURCE_FILES          += $(wildcard ${FREERTOS_DIR}/Demo/motor_os/hal/*.c)
 SOURCE_FILES          += $(wildcard ${FREERTOS_DIR}/Demo/motor_os/middleware/*.c)
 SOURCE_FILES          += $(wildcard ${FREERTOS_DIR}/Demo/motor_os/middleware/parser/*.c)
+SOURCE_FILES          += $(wildcard ${FREERTOS_DIR}/Demo/motor_os/middleware/rpm/*.c)
+SOURCE_FILES          += $(wildcard ${FREERTOS_DIR}/Demo/motor_os/middleware/speed/*.c)
+SOURCE_FILES          += $(wildcard ${FREERTOS_DIR}/Demo/motor_os/middleware/maintenance/*.c)
+SOURCE_FILES          += $(wildcard ${FREERTOS_DIR}/Demo/motor_os/middleware/indicator/*.c)
 SOURCE_FILES          += $(wildcard ${FREERTOS_DIR}/Demo/motor_os/ui/*.c)
 # Memory manager (use malloc() / free() )
 SOURCE_FILES          += ${KERNEL_DIR}/portable/MemMang/heap_3.c

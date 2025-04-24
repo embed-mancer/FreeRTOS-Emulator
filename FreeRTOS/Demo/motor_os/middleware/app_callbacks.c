@@ -3,9 +3,9 @@
 #include "can_ids.h"
 #include "../hal/can_manager.h"
 #include "parser/protocol_frame.h"
-#include "vehicle_speed.h"
-#include "vehicle_rpm.h"
-#include "indicator.h"
+#include "speed/vehicle_speed.h"
+#include "rpm/vehicle_rpm.h"
+#include "indicator/indicator.h"
 
 static void speed_handler(const protocol_frame_t *msg) {
   // vehicle_speed_set_status(kmh, true);
@@ -55,10 +55,10 @@ static void indicator_handler(const protocol_frame_t *msg) {
 //   }
 //
 void app_register_handlers() {
-  can_manager_register(CAN_ID_VEHICLE_SPEED, speed_handler);
-  can_manager_register(CAN_ID_ENGINE_RPM, rpm_handler);
-  can_manager_register(CAN_ID_LIGHTS_101, indicator_handler);
-  can_manager_register(CAN_ID_LIGHTS_345, indicator_handler);
+  // can_manager_register(CAN_ID_VEHICLE_SPEED, speed_handler);
+  // can_manager_register(CAN_ID_ENGINE_RPM, rpm_handler);
+  // can_manager_register(CAN_ID_LIGHTS_101, indicator_handler);
+  // can_manager_register(CAN_ID_LIGHTS_345, indicator_handler);
 }
 
 void app_test() {
