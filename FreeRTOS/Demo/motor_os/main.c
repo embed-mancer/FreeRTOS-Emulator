@@ -25,7 +25,6 @@ int main(void) {
   signal(SIGINT, handle_sigint);
 
   printf("Starting echo blinky demo\n");
-    app_test();
   MainApp();
 
   return 0;

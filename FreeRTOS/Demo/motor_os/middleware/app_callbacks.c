@@ -6,6 +6,7 @@
 #include "speed/vehicle_speed.h"
 #include "rpm/vehicle_rpm.h"
 #include "indicator/indicator.h"
+#include "parser/frame_parser.h"
 
 static void speed_handler(const protocol_frame_t *msg) {
   // vehicle_speed_set_status(kmh, true);
@@ -55,10 +56,11 @@ static void indicator_handler(const protocol_frame_t *msg) {
 //   }
 //
 void app_register_handlers() {
-  // can_manager_register(CAN_ID_VEHICLE_SPEED, speed_handler);
-  // can_manager_register(CAN_ID_ENGINE_RPM, rpm_handler);
-  // can_manager_register(CAN_ID_LIGHTS_101, indicator_handler);
-  // can_manager_register(CAN_ID_LIGHTS_345, indicator_handler);
+  frame_parser_register(CAN_ID_VEHICLE_SPEED, speed_handler);
+  frame_parser_register(CAN_ID_ENGINE_RPM, rpm_handler);
+  frame_parser_register(CAN_ID_LIGHTS_101, indicator_handler);
+  frame_parser_register(CAN_ID_LIGHTS_345, indicator_handler);
+  frame_parser_init();
 }
 
 void app_test() {

@@ -22,10 +22,11 @@
 extern "C" {
 #endif
 
-typedef void (*frame_callback)(const protocol_frame_t *frame);
+typedef void (*frame_handle_t)(const protocol_frame_t *frame);
 
-void frame_parser_init(frame_callback cb);
+int frame_parser_init();
 void frame_parser_feed(const uint8_t *data, size_t length);
+void frame_parser_register(const uint32_t id, frame_handle_t handler);
 
 #ifdef __cplusplus
 }
