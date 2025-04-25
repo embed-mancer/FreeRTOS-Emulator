@@ -44,3 +44,8 @@ bool can_manager_init(const char *device, uint32_t baudrate) {
 
   return true;
 }
+
+bool can_manager_send(uint8_t *data, size_t len) {
+  bsp_can_write(data);
+  return true;
+}

@@ -15,6 +15,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,6 +23,7 @@ extern "C" {
 
 bool can_manager_init(const char *device, uint32_t baudrate);
 void can_manager_dispatch();
+bool can_manager_send(uint8_t *data, size_t len);
 
 #ifdef __cplusplus
 }

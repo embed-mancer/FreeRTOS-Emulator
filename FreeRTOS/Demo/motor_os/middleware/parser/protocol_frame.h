@@ -14,6 +14,7 @@
 #define PROTOCOL_FRAME_H_
 
 #include <stdint.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,6 +50,34 @@ typedef struct {
   const uint8_t *payload;
   uint8_t crc;
 } protocol_frame_t;
+
+/**
+ * @brief  Calculate an 8-bit CRC using a simple XOR algorithm.
+ * @param  data  Pointer to the data buffer to compute the CRC over.
+ * @param  len   Number of bytes in the data buffer.
+ * @return       The computed 8-bit CRC value.
+ */
+uint8_t protocol_frame_calc_crc8(const uint8_t *data, size_t len);
+
+/**
+ * @brief  Pack a protocol_frame_t into a byte buffer.
+ *
+ * Frame layout:
+ *   [ stag      ] 1 byte
+ *   [ cmd_type  ] 1 byte
+ *   [ cmd_code  ] 1 byte
+ *   [ data_len  ] 1 byte
+ *   [ payload   ] data_len bytes (optional)
+ *   [ crc       ] 1 byte (CRC8 over all previous bytes)
+ *
+ * @param  frame      Pointer to the frame to pack.
+ * @param  buf        Destination buffer for packed bytes.
+ * @param  buf_size   Size of the destination buffer.
+ * @return            Number of bytes written on success, or 0 on failure
+ *                    (e.g., insufficient buffer space or invalid payload).
+ */
+size_t protocol_frame_pack(const protocol_frame_t *frame, uint8_t *buf,
+                           size_t buf_size);
 
 #ifdef __cplusplus
 }

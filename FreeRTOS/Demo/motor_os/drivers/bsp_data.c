@@ -6,6 +6,8 @@
 #include "task.h"
 #include "semphr.h"
 
+#include "tool/tool.h"
+
 #define CAN_SIM_BUF_SIZE 1024u
 #define CAN_SIM_TASK_STACK (configMINIMAL_STACK_SIZE + 100)
 #define CAN_SIM_TASK_PRIO (tskIDLE_PRIORITY + 1)
@@ -52,10 +54,10 @@ bool bsp_can_init(const char *device, uint32_t baudrate) {
   if (s_can_mutex == NULL) {
     return false;
   }
-
-  BaseType_t ret = xTaskCreate(_can_sim_task, "CAN_Sim", CAN_SIM_TASK_STACK,
-                               NULL, CAN_SIM_TASK_PRIO, NULL);
-  return (ret == pdPASS);
+  return true;
+  // BaseType_t ret = xTaskCreate(_can_sim_task, "CAN_Sim", CAN_SIM_TASK_STACK,
+  //                              NULL, CAN_SIM_TASK_PRIO, NULL);
+  // return (ret == pdPASS);
 }
 
 size_t bsp_can_read(uint8_t *buf, size_t buf_size) {
@@ -67,4 +69,9 @@ size_t bsp_can_read(uint8_t *buf, size_t buf_size) {
   }
   xSemaphoreGive(s_can_mutex);
   return count;
+}
+
+void bsp_can_write(uint8_t *buf) {
+  int len = buf[3] + 5;
+  _ringbuf_put(buf, len);
 }

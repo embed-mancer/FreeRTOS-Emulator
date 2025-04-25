@@ -13,9 +13,9 @@
 #ifndef CAN_IDS_H_
 #define CAN_IDS_H_
 
-#define CAN_ID_VEHICLE_SPEED 0x300
-#define CAN_ID_ENGINE_RPM 0x201
-#define CAN_ID_LIGHTS_101 0x101
-#define CAN_ID_LIGHTS_345 0x345
+#define CAN_ID_VEHICLE_SPEED 0x30
+#define CAN_ID_ENGINE_RPM 0x20
+#define CAN_ID_LIGHTS_101 0x10
+#define CAN_ID_LIGHTS_345 0x34
 
 #endif  // CAN_IDS_H_

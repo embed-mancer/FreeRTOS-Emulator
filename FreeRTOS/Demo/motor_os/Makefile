@@ -38,6 +38,7 @@ SOURCE_FILES          += $(wildcard ${FREERTOS_DIR}/Demo/motor_os/middleware/rpm
 SOURCE_FILES          += $(wildcard ${FREERTOS_DIR}/Demo/motor_os/middleware/speed/*.c)
 SOURCE_FILES          += $(wildcard ${FREERTOS_DIR}/Demo/motor_os/middleware/maintenance/*.c)
 SOURCE_FILES          += $(wildcard ${FREERTOS_DIR}/Demo/motor_os/middleware/indicator/*.c)
+SOURCE_FILES          += $(wildcard ${FREERTOS_DIR}/Demo/motor_os/middleware/tool/*.c)
 SOURCE_FILES          += $(wildcard ${FREERTOS_DIR}/Demo/motor_os/ui/*.c)
 # Memory manager (use malloc() / free() )
 SOURCE_FILES          += ${KERNEL_DIR}/portable/MemMang/heap_3.c

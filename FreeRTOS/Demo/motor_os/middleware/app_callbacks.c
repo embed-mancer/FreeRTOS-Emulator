@@ -61,6 +61,7 @@ void app_register_handlers() {
   frame_parser_register(CAN_ID_LIGHTS_101, indicator_handler);
   frame_parser_register(CAN_ID_LIGHTS_345, indicator_handler);
   frame_parser_init();
+  frame_sender_init();
 }
 
 void app_test() {
