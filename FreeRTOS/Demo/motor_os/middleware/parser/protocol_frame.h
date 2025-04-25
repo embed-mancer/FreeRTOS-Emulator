@@ -47,8 +47,8 @@ typedef struct {
   uint8_t cmd_type;
   uint8_t cmd_code;
   uint8_t data_len;
-  const uint8_t *payload;
   uint8_t crc;
+  uint8_t *payload;
 } protocol_frame_t;
 
 /**

@@ -24,7 +24,6 @@ void can_manager_dispatch() {
 static void can_manager_task(void *params) {
   (void)params;
   for (;;) {
-    printf("CAN manager task running\n");
     can_manager_dispatch();
     vTaskDelay(pdMS_TO_TICKS(100));
   }

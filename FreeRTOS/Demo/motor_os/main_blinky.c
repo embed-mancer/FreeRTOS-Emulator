@@ -9,11 +9,19 @@
 #include "can_manager.h"
 #include "parser/frame_sender.h"
 
+static int rpm = 0;
+static void send_rpm_task(void *params) {
+  for (;;) {
+    frame_sender_rpm(rpm++);
+    vTaskDelay(pdMS_TO_TICKS(10));
+  }
+}
+
 void MainApp(void) {
   can_manager_init("", 115200);
   app_register_handlers();
-  frame_sender_rpm(12345);
-
+  xTaskCreate(send_rpm_task, "send_rpm_task", configMINIMAL_STACK_SIZE, NULL,
+              configMAX_PRIORITIES / 3, NULL);
   vTaskStartScheduler();
 
   for (;;) {

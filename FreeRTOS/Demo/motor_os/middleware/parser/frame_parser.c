@@ -45,7 +45,7 @@ int frame_parser_init() {
     return 0;
   }
 
-  queue_handle = xQueueCreate(10, sizeof(uint32_t));
+  queue_handle = xQueueCreate(10, sizeof(protocol_frame_t *));
   if (queue_handle == NULL) {
     printf("create error!");
     return -1;
@@ -62,17 +62,28 @@ int frame_parser_init() {
 }
 
 static void frame_parser_add(const protocol_frame_t *_msg) {
-  if (queue_handle == NULL) {
-    printf("[%s:%d] error\n", __FUNCTION__, __LINE__);
+  size_t frame_len = 4 /* header */ + _msg->data_len + 1 /* CRC */;
+  // 分配：结构体本身 + payload 数据区
+  size_t alloc_size     = sizeof(protocol_frame_t) + _msg->data_len;
+  protocol_frame_t *msg = pvPortMalloc(alloc_size);
+  if (!msg)
     return;
-  }
-  protocol_frame_t *msg = pvPortMalloc(PARSER_BUF_SIZE);
-  if (msg != NULL) {
-    memcpy(msg, _msg, _msg->data_len + 5);
-    if (xQueueSend(queue_handle, &msg, pdMS_TO_TICKS(100)) != pdPASS) {
-      vPortFree(msg);
-      printf("[%s:%d] error\n", __FUNCTION__, __LINE__);
-    }
+
+  // 1) 拷贝固定字段
+  msg->stag     = _msg->stag;
+  msg->cmd_type = _msg->cmd_type;
+  msg->cmd_code = _msg->cmd_code;
+  msg->data_len = _msg->data_len;
+  // 2) payload 区紧跟结构体后面
+  uint8_t *payload_dst = (uint8_t *)(msg + 1);
+  memcpy(payload_dst, _msg->payload, _msg->data_len);
+  msg->payload = payload_dst;
+  // 3) 如果你需要 CRC 字段，也要单独存入 msg 中
+
+  // 4) 入队
+  if (xQueueSend(queue_handle, &msg, pdMS_TO_TICKS(100)) != pdPASS) {
+    vPortFree(msg);
+    printf("[%s:%d] queue full\n", __FUNCTION__, __LINE__);
   }
 }
 
@@ -134,6 +145,11 @@ void frame_parser_feed(const uint8_t *data, size_t length) {
     s_buf_len = 0;
   }
   /* 拷贝进缓冲并尝试解析 */
+//   printf("frame_parser_feed: \n");
+//   for (int i = 0; i < length; ++i) {
+//     printf("%02X ", data[i]);
+//   }
+  printf("\n");
   memcpy(&s_buf[s_buf_len], data, length);
   s_buf_len += length;
   parser_try();
