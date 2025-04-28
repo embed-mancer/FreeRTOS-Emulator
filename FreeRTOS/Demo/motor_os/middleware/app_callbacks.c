@@ -15,6 +15,7 @@ static void speed_handler(const protocol_frame_t *msg) {
 static void rpm_handler(const protocol_frame_t *msg) {
   uint16_t value = ((uint16_t)msg->payload[0] << 8) | msg->payload[1];
   printf("rpm = %d\n", value);
+  vehicle_rpm_set_value(value);
 }
 
 static void indicator_handler(const protocol_frame_t *msg) {

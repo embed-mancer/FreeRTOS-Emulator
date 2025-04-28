@@ -38,18 +38,19 @@ void frame_sender_task(void *params) {
 
 bool frame_sender_speed(uint16_t speed_kmh) {
   protocol_frame_t frame = {
-      .stag     = 0x02,
+      .stag = 0x02,
       .cmd_type = 0x01,
       .cmd_code = CAN_ID_VEHICLE_SPEED,
       .data_len = sizeof(speed_kmh),
-      .payload  = (const uint8_t *)&speed_kmh,
+      .payload = (const uint8_t *)&speed_kmh,
   };
 
-  uint8_t *buf = pvPortMalloc(sizeof(uint8_t) * 8);
-  if (!buf)
-    false;
+  const size_t buf_size = 4 + frame.data_len + 1;
+  uint8_t *buf = pvPortMalloc(sizeof(uint8_t) * buf_size);
+  if (!buf) return false;
   size_t len = protocol_frame_pack(&frame, buf, sizeof(buf));
   if (len == 0) {
+    vPortFree(buf);
     return false;
   }
   return frame_sender_msg(buf);
@@ -57,23 +58,20 @@ bool frame_sender_speed(uint16_t speed_kmh) {
 
 bool frame_sender_rpm(uint16_t rpm) {
   protocol_frame_t frame = {
-      .stag     = 0x02,
+      .stag = 0x02,
       .cmd_type = 0x02,
       .cmd_code = CAN_ID_ENGINE_RPM,
       .data_len = sizeof(rpm),
-      .payload  = (uint8_t[]){(uint8_t)(rpm >> 8), (uint8_t)(rpm & 0xFF)},
+      .payload = (uint8_t[]){(uint8_t)(rpm >> 8), (uint8_t)(rpm & 0xFF)},
   };
 
   uint8_t *buf = pvPortMalloc(4 + frame.data_len + 1);
-  if (!buf)
-    false;
+  if (!buf) return false;
   size_t len = protocol_frame_pack(&frame, buf, sizeof(buf));
   if (len == 0) {
     vPortFree(buf);
     return false;
   }
-    // printf("send data\n");
-    // printf_data(buf);
   return frame_sender_msg(buf);
 }
 
